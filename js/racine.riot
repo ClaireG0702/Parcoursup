@@ -1,0 +1,24 @@
+<racine>
+<nav class="breadcrumb is-centered" aria-label="breadcrumbs">
+	<ul each={ item in this.state.chemin }>
+		<li><a>{ item }</a></li>
+	</ul>
+</nav>
+
+	<script>
+		export default function racine(){
+			return {
+				onBeforeMount(props, state) {
+					// initial state
+					this.state = {
+						chemin: this.props.chemin
+					}
+					//console.log(this.state.chemin.length)
+					/*for(let i=0;i<this.state.chemin.length;i++){
+						console.log(this.state.chemin[i])
+					}*/
+				}
+			}
+		}
+	</script>
+</racine>

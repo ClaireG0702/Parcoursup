@@ -1,0 +1,415 @@
+<tab>
+<div if={props.visible}>
+<input class="input" placeholder="Etablissement" oninput={ edit }/>
+<table class="table is-hoverable">
+	<thead>
+		<tr>
+			<th onclick={()=>def_attribut("g_ea_lib_vx")} classe="th">Nom<a id="sort" href="#"><span  class="icon"><i class="fas fa-sort"></i></span></a></th>
+			<th onclick={()=>def_attribut("ville_etab")} classe="th">Ville<a id="sort" href="#"><span  class="icon"><i class="fas fa-sort"></i></span></a></th>
+            <th onclick={()=>def_attribut("dep")} classe="th"><abbr title="Département">Dpt</abbr><a id="sort" href="#"><span  class="icon"><i class="fas fa-sort"></i></span></a></th>
+            <th onclick={()=>def_attribut("list_com")} classe="th">Moyenne<a id="sort" href="#"><span  class="icon"><i class="fas fa-sort"></i></span></a></th>
+            <th onclick={()=>def_attribut("selectivite")} classe="th">Selectivité<a id="sort" href="#"><span  class="icon"><i class="fas fa-sort"></i></span></a></th>
+		</tr>
+	</thead>
+    <tbody>
+		<tr id="formation" each={ item in tri(this.state.liste) } onclick={ modal }>
+			<td>{ item.fields.g_ea_lib_vx }</td>
+			<td>{ item.fields.ville_etab }</td>
+			<td>{ item.fields.dep }</td>
+			<td>{ item.fields.list_com }</td>
+			<td>{ item.fields.selectivite }%<progress class="progress" value={100-item.fields.selectivite} max="100"></progress></td>
+			<div hidden>{ item.fields.cod_aff_form }</div>
+		</tr>
+	</tbody>
+</table>
+
+<div id="modal" class="modal">
+	<div class="modal-background" onclick={closeModal}></div>
+	<div class="modal-content has-background-light p-5">
+		<h3>{ this.state.nom }</h3>
+		<div id="remp">
+			<p>Vitesse de remplissage</p>
+			<dl>
+				<dt>Ouverture 27 mai { this.state.remplissage_debut }<dt>
+				<dt>17 juin { this.state.remplissage_milieu }<dt>
+				<dt>16 juillet { this.state.remplissage_fin }<dt>
+			</dl>
+		</div>
+		<div id="info">
+			<dl>
+				<dt>Ville: {this.state.ville}</dt>
+				<dt>Département: {this.state.departement_nb} {this.state.departement_ch}</dt>
+				<dt>Académie: {this.state.academie}</dt>
+				<dt>{this.state.type_etab}</dt>
+				<dt>Capacité: {this.state.capacite}</dt>
+				<dt>Nombre de voeux: {this.state.nb_voeux}</dt>
+				<dt>Rang dernier admis: </dt>
+					<dd>Tous les candidats sauf les Bac technologiques: {this.state.dernier_rang_admis_BG}</dd>
+					<dd>Bacheliers technologiques toutes séries: {this.state.dernier_rang_admis_BT}</dd>
+				<dt>Admis hors académie: {100-this.state.admis_hors_academie}%<dt>
+			</dl>
+		</div>
+		<div></div>
+		<div>
+			<div syle="height:inherit; width:inherit;">
+			<p>Répartion par genre</p>
+			<canvas id="genre2" width={this.state.taille}></canvas>
+		</div>
+
+		<div>
+			<p>Répartion par bac</p>
+			<canvas id="bac2" width={this.state.taille}></canvas>
+		</div>
+
+		<div>
+			<p>Répartion par mention au bac</p>
+			<canvas id="mention2" width={this.state.taille}></canvas>
+		</div>
+		<div>
+			<p>Vitesse de remplissage</p>
+			<canvas id="remplissage" width={this.state.taille/3}></canvas>
+		</div>
+		<!--<div>{this.state.pc_admis_genre_f}%(F)<div><div>F</div>
+			<div>{100-this.state.pc_admis_genre_f}%(H)<div><div>H</div>
+
+			<div>{this.state.pc_admis_BG}%(Gen)<div><div>Gen</div>
+			<div>{this.state.pc_admis_BT}%(Tech)<div><div>Tech</div>
+			<div>{this.state.pc_admis_BP}%(Pro)<div><div>Pro</div>
+			<div>{100-this.state.pc_admis_BG-this.state.pc_admis_BT-this.state.pc_admis_BP}%(Aut)<div><div>Aut</div>
+
+			<div>{this.state.pc_mention_sm}%(P)<div><div>P</div>
+			<div>{this.state.pc_mention_ab}%(AB)<div><div>AB</div>
+			<div>{this.state.pc_mention_b}%(B)<div><div>B</div>
+			<div>{this.state.pc_mention_tb}%(TB)<div><div>TB</div>
+			<div>{this.state.pc_mention_tbf}%(TBF)<div><div>TBF</div>-->
+		</div>
+	</div>
+</div>
+</div>
+
+<script>
+	export default function tab() {
+		return {
+			onBeforeMount(props, state) {
+				// initial state
+				this.state = {
+					records: props.reponse.records,
+					fonction: props.fonction,
+					liste: props.reponse.records,
+					taille:600,
+					attribut: null,
+					liste_trier: null,
+					retour: null,
+					effectif: null,
+					nom: null,
+					ville: null,
+					departement_nb: null,
+					departement_ch: null,
+					academie: null,
+					type_etab: null,
+					capacite: null,
+					nb_voeux: null,
+					dernier_rang_admis_BG: null,
+					dernier_rang_admis_BT: null,
+					admis_hors_academie: null,
+					remplissage_debut: null,
+					remplissage_milieu: null,
+					remplissage_fin: null,
+					pc_admis_genre_f: null,
+					pc_admis_BG: null,
+					pc_admis_BT: null,
+					pc_admis_BP: null,
+					pc_mention_sm: null,
+					pc_mention_ab: null,
+					pc_mention_b: null,
+					pc_mention_tb: null,
+					pc_mention_tbf: null
+				}
+				
+				this.state.records.forEach(record => {
+					// calcul de la moyenne
+					let pct_sansmention = record.fields.pct_sansmention
+					let pct_AB = record.fields.pct_ab
+					let pct_B = record.fields.pct_b
+					let pct_TB = record.fields.pct_tb
+					let pct_TBF = record.fields.pct_tbf
+					
+					let moyenne = ((pct_TBF*19)+(pct_TB*17)+(pct_B*15)+(pct_AB*13)+(pct_sansmention*11))/100
+					
+					record.fields['list_com'] = moyenne
+					//console.log(moyenne)
+
+					// calcul de la selectivite
+					let prop_tot = record.fields.prop_tot
+					let voe_tot = record.fields.voe_tot
+
+					let select = parseInt((prop_tot/voe_tot)*100)
+
+					record.fields['selectivite'] = select
+				})
+			},
+			modal(e) {
+				//console.log(this.state.records[0])
+				//console.log(e.target.childNode[1].childNode[0].data)
+				comparaison=e.target.parentNode.childNodes[5].childNodes[0].data
+				for(let i=0;i<this.state.records.length;i++){
+					champ=this.state.records[i].fields
+					if(champ.cod_aff_form==comparaison){
+						this.state.nom=champ.lib_comp_voe_ins
+						this.state.ville=champ.ville_etab
+						this.state.departement_nb=champ.dep
+						this.state.departement_ch=champ.dep_lib
+						this.state.academie=champ.acad_mies
+						this.state.type_etab=champ.contrat_etab
+						this.state.capacite=champ.capa_fin
+						this.state.nb_voeux=champ.voe_tot
+						this.state.dernier_rang_admis_BG=champ.ran_grp1
+						this.state.dernier_rang_admis_BT=champ.ran_grp2
+						this.state.admis_hors_academie=champ.pct_aca_orig
+						this.state.remplissage_debut=champ.pct_acc_debutpp
+						this.state.remplissage_milieu=champ.pct_acc_datebac
+						this.state.remplissage_fin=champ.pct_acc_finpp
+						this.state.pc_admis_genre_f=champ.pct_f
+						this.state.pc_admis_BG=champ.pct_bg
+						this.state.pc_admis_BT=champ.pct_bt
+						this.state.pc_admis_BP=champ.pct_bp
+						this.state.pc_mention_sm=champ.pct_sansmention
+						this.state.pc_mention_ab=champ.pct_ab
+						this.state.pc_mention_b=champ.pct_b
+						this.state.pc_mention_tb=champ.pct_tb
+						this.state.pc_mention_tbf=champ.pct_tbf
+					}
+				}
+				var modal = document.getElementById("modal")
+				modal.style.display = "block"
+				this.update()
+				this.graphe()
+			},
+			closeModal() {
+				modal.style.display = "none"
+				this.update()
+			},
+			edit(e) {
+				this.state.liste= this.state.records
+				this.state.dico= new Array(this.state.liste.length)
+
+				let mot=e.target.value
+				let flag=1
+				let j=0
+				for(let i=0;i<this.state.liste.length;i++){
+					flag=1
+					let corps=""
+					for(let k=0;k<mot.length;k++){
+						if(this.state.liste[i].fields.g_ea_lib_vx.includes(corps+mot[k].toLowerCase())){
+							corps=corps+mot[k].toLowerCase()
+						}else if(this.state.liste[i].fields.g_ea_lib_vx.includes(corps+mot[k].toUpperCase())){
+							corps=corps+mot[k].toUpperCase()
+						}else{
+							flag=0
+						}
+					}
+					if(flag==1){
+						this.state.dico[j]=this.state.liste[i]
+						j++
+					}
+				}
+				//console.log(this.state.dico.length)
+				this.state.liste = new Array(j)
+				for(let i=0;i<j;i++){
+					this.state.liste[i]=this.state.dico[i]
+				}
+				// update only the text state
+				this.update()
+			},
+			tri(liste){
+				//console.log(this.state.attribut)
+				if(this.state.attribut==null){
+					return liste
+				}
+				if(this.state.attribut=='g_ea_lib_vx'){
+					for(let i=0;i<liste.length;i++){
+						for(let j=0;j<liste.length-1;j++){
+							let element=liste[j].fields.g_ea_lib_vx
+							let suivant=liste[j+1].fields.g_ea_lib_vx
+							if(element>suivant){
+								temp=liste[j+1]
+								liste[j+1]=liste[j]
+								liste[j]=temp
+							}
+						}
+					}
+					return liste
+				}
+				if(this.state.attribut=='ville_etab'){
+					for(let i=0;i<liste.length;i++){
+						for(let j=0;j<liste.length-1;j++){
+							let element=liste[j].fields.ville_etab
+							let suivant=liste[j+1].fields.ville_etab
+							if(element>suivant){
+								temp=liste[j+1]
+								liste[j+1]=liste[j]
+								liste[j]=temp
+							}
+						}
+					}
+					return liste
+				}
+				if(this.state.attribut=='dep'){
+					for(let i=0;i<liste.length;i++){
+						for(let j=0;j<liste.length-1;j++){
+							let element=liste[j].fields.dep
+							let suivant=liste[j+1].fields.dep
+							if(element>suivant){
+								temp=liste[j+1]
+								liste[j+1]=liste[j]
+								liste[j]=temp
+							}
+						}
+					}
+					return liste
+				}
+				if(this.state.attribut=='list_com'){
+					for(let i=0;i<liste.length;i++){
+						for(let j=0;j<liste.length-1;j++){
+							let element=liste[j].fields.list_com
+							let suivant=liste[j+1].fields.list_com
+							if(element>suivant){
+								temp=liste[j+1]
+								liste[j+1]=liste[j]
+								liste[j]=temp
+							}
+						}
+					}
+					return liste
+				}
+				if(this.state.attribut=='selectivite'){
+					for(let i=0;i<liste.length;i++){
+						for(let j=0;j<liste.length-1;j++){
+							let element=liste[j].fields.selectivite
+							let suivant=liste[j+1].fields.selectivite
+							if(element>suivant){
+								temp=liste[j+1]
+								liste[j+1]=liste[j]
+								liste[j]=temp
+							}
+						}
+					}
+					return liste
+				}
+			},
+			def_attribut(attr){
+				this.state.attribut=attr
+				this.update()
+			},
+			graphe() {
+					// graphe repartition genre
+					let canvaGenre = document.getElementById("genre2")
+					//console.log(this.state.pc_admis_genre_f)
+					if (!canvaGenre) return;
+					//console.log(canvaGenre.width)
+					let genre = [
+						{label: "F", value: this.state.pc_admis_genre_f, color: "#6A5ACD"},
+						{label: "H", value: 100-this.state.pc_admis_genre_f, color: "#BA55D3"}
+					]
+					this.graph(canvaGenre, genre)
+
+					// graphe repartition bac
+					let canvaBac = document.getElementById("bac2")
+					if (!canvaBac) return;
+					let bac = [
+						{label: "Gen", value: this.state.pc_admis_BG, color: "#191970"},
+						{label: "Tech", value: this.state.pc_admis_BT, color: "#4B0082"},
+						{label: "Pro", value: this.state.pc_admis_BP, color: "#6A5ACD"},
+						{label: "Aut", value: 100-this.state.pc_admis_BG-this.state.pc_admis_BT-this.state.pc_admis_BP, color: "#BA55D3"}
+					]
+					this.graph(canvaBac, bac)
+
+					// graphe repartition mention
+					let canvaMention = document.getElementById("mention2")
+					if (!canvaMention) return;
+					let mention = [
+						{label: "P", value: this.state.pc_mention_sm, color: "#191970"},
+						{label: "AB", value: this.state.pc_mention_ab, color: "#4B0082"},
+						{label: "B", value: this.state.pc_mention_b, color: "#6A5ACD"},
+						{label: "TB", value: this.state.pc_admis_tb, color: "#BA55D3"},
+						{label: "TBF", value: this.state.pc_mention_tbf, color: "#DDA0DD"}
+					]
+					this.graph(canvaMention, mention)
+
+					// graphe repartition remplissage
+					let canvaRemplissage = document.getElementById("remplissage")
+					if (!canvaRemplissage) return;
+					let remplissage = [
+						{label: "OUVERTURE 27 MAI", value: this.state.remplissage_debut, color: "#00FF00"},
+						{label: "17 JUIN", value: this.state.remplissage_milieu, color: "#00FF00"},
+						{label: "16 JUILLET", value: this.state.remplissage_fin, color: "#00FF00"}
+					]
+					this.dessin(canvaRemplissage, remplissage)
+				},
+				graph(canvas, data) {
+					console.log(canvas.clientWidth)
+					let ctx = canvas.getContext('2d')
+					j = 10
+					ctx.beginPath()
+					let marge=5
+					let mot=""
+					let decalage=-200
+					for(dataValues of data) {
+						if(dataValues.value==0){
+							marge=0
+						}else{
+							marge=5
+						}
+						if(dataValues.value<=10){
+							mot=""
+						}else{
+							mot=dataValues.value+"% ("+dataValues.label+")"
+						}
+						ctx.strokeStyle = 'black'
+						ctx.strokeRect(j, 10, (dataValues.value/100)*canvas.clientWidth+marge, 30)
+						ctx.fillStyle = dataValues.color
+						ctx.fillRect(j, 10, (dataValues.value/100)*canvas.clientWidth, 30)
+
+						ctx.strokeStyle = 'white'
+						ctx.fillStyle = 'white'
+						ctx.fillRect(j+(dataValues.value/100)*canvas.clientWidth, 10, marge, 30)
+
+						ctx.fillStyle = 'white'
+						ctx.fillText(mot, j+((dataValues.value/100)*canvas.clientWidth+marge)/2-mot.length, 30)
+						ctx.fillStyle = 'black'
+						ctx.fillText(dataValues.label, this.state.taille/2+decalage, 75)
+						ctx.fillStyle = dataValues.color
+						ctx.fillRect(this.state.taille/2+decalage-40, 60, 20, 20)
+
+						decalage+=100
+						j += (dataValues.value/100)*canvas.clientWidth+marge
+					}
+					ctx.closePath()
+				},
+				dessin(canvas, data) {
+					console.log(canvas.clientWidth)
+					let ctx = canvas.getContext('2d')
+					ctx.beginPath()
+					let j=50
+					ctx.moveTo(50,0)
+					ctx.lineTo(50,j)
+					ctx.stroke()
+					for(dataValues of data) {
+						ctx.strokeStyle = dataValues.color
+						ctx.fillStyle = dataValues.color
+						ctx.arc(50,j,10,Math.PI/2,3*Math.PI/2,false)
+						ctx.arc(50,j,10,3*Math.PI/2,Math.PI/2,false)
+						ctx.fill()
+						ctx.lineTo(50,j+75)
+						ctx.stroke()
+
+						ctx.fillStyle = 'black'
+						ctx.fillText(dataValues.label, 100, j)
+						j+=75
+					}
+					ctx.closePath()
+				}
+		}
+	}
+</script>
+</tab>

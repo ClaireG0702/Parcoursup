@@ -1,0 +1,141 @@
+<graphe>
+	<div id="graphs" if={props.visible} class="panel">
+		<div syle="height:inherit; width:inherit;">
+			<p>Répartion par genre</p>
+			<canvas id="genre" width={this.state.taille}></canvas>
+		</div>
+
+		<div>
+			<p>Répartion par bac</p>
+			<canvas id="bac" width={this.state.taille}></canvas>
+		</div>
+
+		<div>
+			<p>Répartion par mention au bac</p>
+			<canvas id="mention" width={this.state.taille}></canvas>
+		</div>
+	</div>
+
+	<script>
+		
+		export default function graphe(){
+			return {
+				onBeforeMount(props, state) {
+					//initial state
+					this.state = {
+						records: props.reponse.records,
+						taille:1000,
+						pc_admis_genre_f: null,
+						pc_admis_BG: null,
+						pc_admis_BT: null,
+						pc_admis_BP: null,
+						pc_mention_sm: null,
+						pc_mention_ab: null,
+						pc_mention_b: null,
+						pc_mention_tb: null,
+						pc_mention_tbf: null,
+					}
+					this.edit()
+				},
+				onMounted() {
+					// graphe repartition genre
+					let canvaGenre = document.getElementById("genre")
+					if (!canvaGenre) return;
+					//console.log(canvaGenre.width)
+					let genre = [
+						{label: "F", value: this.state.pc_admis_genre_f, color: "#6A5ACD"},
+						{label: "H", value: 100-this.state.pc_admis_genre_f, color: "#BA55D3"}
+					]
+					this.graph(canvaGenre, genre)
+
+					// graphe repartition bac
+					let canvaBac = document.getElementById("bac")
+					if (!canvaBac) return;
+					let bac = [
+						{label: "Gen", value: this.state.pc_admis_BG, color: "#191970"},
+						{label: "Tech", value: this.state.pc_admis_BT, color: "#4B0082"},
+						{label: "Pro", value: this.state.pc_admis_BP, color: "#6A5ACD"},
+						{label: "Aut", value: 100-this.state.pc_admis_BG-this.state.pc_admis_BT-this.state.pc_admis_BP, color: "#BA55D3"}
+					]
+					this.graph(canvaBac, bac)
+
+					// graphe repartition mention
+					let canvaMention = document.getElementById("mention")
+					if (!canvaMention) return;
+					let mention = [
+						{label: "P", value: this.state.pc_mention_sm, color: "#191970"},
+						{label: "AB", value: this.state.pc_mention_ab, color: "#4B0082"},
+						{label: "B", value: this.state.pc_mention_b, color: "#6A5ACD"},
+						{label: "TB", value: this.state.pc_admis_tb, color: "#BA55D3"},
+						{label: "TBF", value: this.state.pc_mention_tbf, color: "#DDA0DD"}
+					]
+					this.graph(canvaMention, mention)
+				},
+                edit(e) {
+					let i
+                    for(i=0;i<this.state.records.length;i++){
+                        this.state.pc_admis_genre_f=this.state.pc_admis_genre_f+this.state.records[i].fields.pct_f
+                        this.state.pc_admis_BG=this.state.pc_admis_BG+this.state.records[i].fields.pct_bg
+                        this.state.pc_admis_BT=this.state.pc_admis_BT+this.state.records[i].fields.pct_bt
+                        this.state.pc_admis_BP=this.state.pc_admis_BP+this.state.records[i].fields.pct_bp
+                        this.state.pc_mention_sm=this.state.pc_mention_sm+this.state.records[i].fields.pct_sansmention
+                        this.state.pc_mention_ab=this.state.pc_mention_ab+this.state.records[i].fields.pct_ab
+                        this.state.pc_mention_b=this.state.pc_mention_b+this.state.records[i].fields.pct_b
+                        this.state.pc_mention_tb=this.state.pc_mention_tb+this.state.records[i].fields.pct_tb
+                        this.state.pc_mention_tbf=this.state.pc_mention_tbf+this.state.records[i].fields.pct_tbf
+                    }
+					this.state.pc_admis_genre_f=parseInt(this.state.pc_admis_genre_f/i)
+                    this.state.pc_admis_BG=parseInt(this.state.pc_admis_BG/i)
+                    this.state.pc_admis_BT=parseInt(this.state.pc_admis_BT/i)
+                    this.state.pc_admis_BP=parseInt(this.state.pc_admis_BP/i)
+                    this.state.pc_mention_sm=parseInt(this.state.pc_mention_sm/i)
+                    this.state.pc_mention_ab=parseInt(this.state.pc_mention_ab/i)
+                    this.state.pc_mention_b=parseInt(this.state.pc_mention_b/i)
+                    this.state.pc_mention_tb=parseInt(this.state.pc_mention_tb/i)
+                    this.state.pc_mention_tbf=parseInt(this.state.pc_mention_tbf/i)
+				},
+				graph(canvas, data) {
+					//console.log(canvas.clientWidth)
+					let ctx = canvas.getContext('2d')
+					j = 10
+					ctx.beginPath()
+					let marge=5
+					let mot=""
+					let decalage=-200
+					for(dataValues of data) {
+						if(dataValues.value==0){
+							marge=0
+						}else{
+							marge=5
+						}
+						if(dataValues.value<=5){
+							mot=""
+						}else{
+							mot=dataValues.value+"% ("+dataValues.label+")"
+						}
+						ctx.strokeStyle = 'black'
+						ctx.strokeRect(j, 10, (dataValues.value/100)*canvas.clientWidth+marge, 30)
+						ctx.fillStyle = dataValues.color
+						ctx.fillRect(j, 10, (dataValues.value/100)*canvas.clientWidth, 30)
+
+						ctx.strokeStyle = 'white'
+						ctx.fillStyle = 'white'
+						ctx.fillRect(j+(dataValues.value/100)*canvas.clientWidth, 10, marge, 30)
+
+						ctx.fillStyle = 'white'
+						ctx.fillText(mot, j+((dataValues.value/100)*canvas.clientWidth+marge)/2-mot.length, 30)
+						ctx.fillStyle = 'black'
+						ctx.fillText(dataValues.label, this.state.taille/2+decalage, 75)
+						ctx.fillStyle = dataValues.color
+						ctx.fillRect(this.state.taille/2+decalage-40, 60, 20, 20)
+
+						decalage+=100
+						j += (dataValues.value/100)*canvas.clientWidth+marge
+					}
+					ctx.closePath()
+					this.update()
+				}
+			}
+		}	
+	</script>
+</graphe>

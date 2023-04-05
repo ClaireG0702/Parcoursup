@@ -1,0 +1,186 @@
+<main>
+  <script>
+  export default function main(){
+			return {
+        onBeforeMount(props, state) {
+			let flag=0
+			let souvenir=null
+			let items=null
+			let res=null
+			let modif=null
+			let table=new Array(4)
+			let chemin = new Array(3)
+			table[0]="&facet=fili"
+			table[1]=""
+			table[2]=null
+			table[3]=null
+			chemin[0]=null
+			chemin[1]=null
+			chemin[2]=null
+
+			retour("&facet=fili","")
+
+			async function requete(lien){
+				let chaine="https://data.enseignementsup-recherche.gouv.fr/api/records/1.0/search/?dataset=fr-esr-parcoursup"+lien+"&timezone=Europe%2FBerlin"
+				let prom
+				let resultat
+				let test=localStorage.getItem(lien)
+				if(test){
+					resultat = JSON.parse(test)
+				}else{
+					prom=await fetch(chaine)
+					resultat=await prom.json()
+					//console.log(resultat)
+					localStorage.setItem(lien,JSON.stringify(resultat))
+				}
+				console.log(resultat)
+				return resultat
+			}
+			function menu(reponse){
+				riot.compile(reponse).then(() => {
+					riot.mount('search',{reponse: reponse,retour: retour,sauvegarde: sauvegarde,recuperation: recuperation,getmemoire: getmemoire,setmemoire: setmemoire})
+				})
+			}
+			function racine(){
+				riot.compile().then(() => {
+					riot.mount('racine',{chemin: chemin})
+				})
+				return ""
+			}
+			function tab(reponse){
+				riot.compile(reponse).then(() => {
+					riot.mount('tab',{reponse: reponse,fonction: retour, visible:true})
+				})
+			}
+			function recapitulatif(reponse){
+				riot.compile(reponse).then(() => {
+					riot.mount('recapitulatif',{reponse: reponse,visible:true})
+				})
+			}
+			function graphe(reponse){
+				riot.compile(reponse).then(() => {
+					riot.mount('graphe',{reponse: reponse,visible:true})
+				})
+			}
+			function retour(chaine,effectif){
+				chaine=anti_espace(chaine)
+				//console.log(chaine)
+				//console.log(effectif)
+				//console.log(flag)
+				if(flag!=4){
+					flag++
+				}
+				//console.log(flag)
+				if(flag<=1){
+					modif=chaine
+					prom=requete(modif)
+					prom.then((reponse)=>{
+						menu(reponse)
+						racine()
+					})
+				}
+				if(flag==2){
+					modif="&facet=form_lib_voe_acc&refine.fili="+chaine
+
+					prom=requete(modif)
+					prom.then((reponse)=>{
+						menu(reponse)
+						racine()
+					})
+				}
+				if(flag==3){
+					modif="&facet=fil_lib_voe_acc&refine.form_lib_voe_acc="+chaine
+					prom=requete(modif)
+					prom.then((reponse)=>{
+						menu(reponse)
+						racine()
+					})
+				}
+				if(flag==4){
+					modif="&rows="+effectif+"&sort=tri&refine.fil_lib_voe_acc="+chaine
+					prom=requete(modif)
+					prom.then((reponse)=>{
+						tab(reponse)
+						recapitulatif(reponse)
+						graphe(reponse)
+						racine()
+					})
+				}
+			}
+			function sauvegarde(chaine,effectif){
+				if(flag==1){
+					table[2]=chaine
+					table[3]=effectif
+					chemin[0]=chaine
+					return
+
+				}else if(flag==2){
+					chemin[1]=chaine
+					return
+				}else if(flag==3){
+					chemin[2]=chaine
+					return
+				}else if(flag==4){
+					chemin[2]=chaine
+					return
+				}else{
+					return
+				}
+			}
+			function recuperation(){
+				let chaine,effectif,paquet= new Array (2)
+				if(flag>0){
+					if(flag==4){
+						flag--
+						let prom=requete(modif)
+						prom.then((reponse)=>{
+							riot.compile(reponse).then(() => {
+								console.log(reponse)
+								riot.mount('tab',{reponse: reponse,fonction: retour, visible:false})
+								riot.mount('recapitulatif',{reponse: reponse,visible:false})
+								riot.mount('graphe',{reponse: reponse,visible:false})
+							})
+						})
+
+					}
+					flag=flag-2
+				}
+				//console.log(flag)
+				if(flag<=0){
+					chemin[0]=null
+					paquet[0]=table[0]
+					paquet[1]=table[1]
+					table[2]=null
+					table[3]=null
+					return paquet
+				}
+				else if(flag==1){
+					chemin[1]=null
+					chemin[2]=null
+					paquet[0]=table[2]
+					paquet[1]=table[3]
+					return paquet
+				}
+			}
+			function anti_espace(chaine){
+				let nouveau=''
+				for(let i=0;i<chaine.length;i++){
+					if(chaine[i]=='+'){
+						nouveau=nouveau+'%2B'	
+					}else{
+						nouveau=nouveau+chaine[i]
+					}
+				}
+				return nouveau
+			}
+			function getmemoire(){
+				return souvenir
+			}
+			function setmemoire(souv){
+				souvenir=souv
+			}
+      }
+    }
+  }
+  </script>
+</main>

@@ -1,0 +1,65 @@
+<recapitulatif>
+<div class="box columns is-multiline m-5" if={props.visible}>
+    <span class="column is-10">Moyenne des admis </span><span class="column">{ this.state.note_moyenne }</span><br>
+    <span class="column is-10">Nb formations </span><span class="column">{ this.state.nb_formations }</span><br>
+    <span class="column is-10">Capacité </span><span class="column">{ this.state.capacite_moyenne }</span><br>
+    <span class="column is-10">Selectivité </span><span class="column">{ this.state.selectivite_moyenne }%</span><progress class="progress" value={this.state.selectivite_moyenne} max="100"></progress>
+</div>
+
+	<script>
+		export default function recapitulatif(){
+			return {
+				onBeforeMount(props, state) {
+					// initial state
+					this.state = {
+						records: this.props.reponse.records,
+                        capacite_moyenne: null,
+                        nb_formations: null,
+                        selectivite_moyenne: null,
+                        note_moyenne: null
+					},
+					//console.log(this.state.chemin.length)
+					/*for(let i=0;i<this.state.chemin.length;i++){
+						console.log(this.state.chemin[i])
+					}*/
+                    this.state.records.forEach(record => {
+                        // calcul de la moyenne
+                        let pct_sansmention = record.fields.pct_sansmention
+                        let pct_AB = record.fields.pct_ab
+                        let pct_B = record.fields.pct_b
+                        let pct_TB = record.fields.pct_tb
+                        let pct_TBF = record.fields.pct_tbf
+                        
+                        let moyenne = ((pct_TBF*19)+(pct_TB*17)+(pct_B*15)+(pct_AB*13)+(pct_sansmention*11))/100
+                        
+                        record.fields['list_com'] = moyenne
+                        //console.log(moyenne)
+
+                        // calcul de la selectivite
+                        let prop_tot = record.fields.prop_tot
+                        let voe_tot = record.fields.voe_tot
+
+                        let select = parseInt((prop_tot/voe_tot)*100)
+
+                        record.fields['selectivite'] = select
+                        //console.log("allez")
+				    })
+                    this.edit()
+				},
+                edit(){
+                    //console.log(this.state.records[0].selectivite)
+                    this.state.nb_formations=0
+                    for(let i=0;i<this.state.records.length;i++){
+                        this.state.capacite_moyenne=this.state.capacite_moyenne+this.state.records[i].fields.capa_fin
+                        this.state.selectivite_moyenne=this.state.selectivite_moyenne+this.state.records[i].fields.selectivite
+                        this.state.note_moyenne=this.state.note_moyenne+this.state.records[i].fields.list_com
+                        this.state.nb_formations++
+                    }
+                    this.state.capacite_moyenne=parseInt(this.state.capacite_moyenne/this.state.nb_formations)
+                    this.state.selectivite_moyenne=parseInt(this.state.selectivite_moyenne/this.state.nb_formations)
+                    this.state.note_moyenne=this.state.note_moyenne/this.state.nb_formations
+                }
+			}
+		}
+	</script>
+</recapitulatif>

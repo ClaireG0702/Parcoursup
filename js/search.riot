@@ -1,0 +1,93 @@
+<search>
+<aside class="box">
+<form class="field has-addons" onsubmit={ add }>
+	<input class="input" type="text" oninput={ edit }/>
+    <button class="button" type="button" onclick={ deplacement }>&lt</button>
+</form>
+
+<ul class="menu-list">
+	<li each={ item in this.state.liste}>
+		<a><label class="columns tags has-addons" onclick={deplacement}>
+			<noeud1 class="column is-11">{item.name}</noeud1>
+			<noeud2 class="tag is-primary is-success column">{item.count}</noeud2>
+		</label></a>
+	</li>
+</ul>
+</aside>
+	<script>
+		export default function menu(){
+			return {
+				onBeforeMount(props, state) {
+					// initial state
+					this.state = {
+						facet_groups: props.reponse.facet_groups,
+						retour: props.retour,
+						sauvegarde: props.sauvegarde,
+						recuperation: props.recuperation,
+						getmemoire: props.getmemoire,
+						setmemoire: props.setmemoire,
+						name: null,
+						effectif: null,
+						liste: props.reponse.facet_groups[0].facets,
+						dico: null,
+						drapeau: 0
+					}
+				},
+				edit(e) {
+					this.state.liste= this.state.facet_groups[0].facets
+					this.state.dico= new Array(this.state.liste.length)
+
+					let mot=e.target.value
+					let flag=1
+					let j=0
+					for(let i=0;i<this.state.liste.length;i++){
+						flag=1
+						let corps=""
+						for(let k=0;k<mot.length;k++){
+							if(this.state.liste[i].name.includes(corps+mot[k].toLowerCase())){
+								corps=corps+mot[k].toLowerCase()
+							}else if(this.state.liste[i].name.includes(corps+mot[k].toUpperCase())){
+								corps=corps+mot[k].toUpperCase()
+							}else{
+								flag=0
+							}
+						}
+						if(flag==1){
+							this.state.dico[j]=this.state.liste[i]
+							j++
+						}
+					}
+					//console.log(this.state.dico.length)
+					this.state.liste = new Array(j)
+					for(let i=0;i<j;i++){
+						this.state.liste[i]=this.state.dico[i]
+					}
+					// update only the text state
+					this.update()
+				},
+				deplacement(e) {
+					console.log(this.state.getmemoire())
+					// update only the text state
+					if(e.target.type!="button"){
+						if(this.state.drapeau==0){
+							if(e.target.parentNode.childNodes[0].childNodes[0].data==this.state.getmemoire()){
+								this.state.drapeau=1;
+							}
+							if(this.state.drapeau==0){
+								this.state.name=e.target.parentNode.childNodes[0].childNodes[0].data
+								this.state.effectif=e.target.parentNode.childNodes[1].childNodes[0].data
+								this.state.sauvegarde(this.state.name,this.state.effectif)
+							}
+						}
+					}else{
+						let tab=this.state.recuperation()
+						this.state.name=tab[0]
+						this.state.effectif=tab[1]
+					}
+					this.state.setmemoire(this.state.name)
+					this.state.retour(this.state.name,this.state.effectif)
+				}
+			}
+		}
+	</script>
+</search>
